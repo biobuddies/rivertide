@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta name="color-scheme" content="dark" />
+        <title>RIVERTIDE</title>
+        <link rel="stylesheet" href="index.css" />
+        <script src="index.js" defer></script>
+    </head>
+    <body>
+        <div class="screen">
+            <header class="titlebar">
+                <h1>RIVERTIDE<span class="cursor">_</span></h1>
+            </header>
+            <main>
+                <section aria-labelledby="environment-heading">
+                    <h2 id="environment-heading">ENVIRONMENT</h2>
+                    <dl class="environment" id="environment"></dl>
+                    <p class="empty-state" id="empty-state" hidden>
+                        No RIVERTIDE_ variables stored.
+                    </p>
+                </section>
+            </main>
+            <footer class="toolbar">
+                <span class="count" id="count">0 VARIABLES</span>
+                <button id="edit-button" type="button">EDIT ENVIRONMENT</button>
+            </footer>
+        </div>
+
+        <dialog id="environment-dialog" aria-labelledby="dialog-title">
+            <form id="environment-form">
+                <header class="dialog-header">
+                    <h2 id="dialog-title">ENVIRONMENT</h2>
+                    <button class="icon-button" type="button" data-close-dialog aria-label="Close">
+                        ×
+                    </button>
+                </header>
+                <div class="dialog-body">
+                    <label class="editor-label" for="environment-definitions">NAME = value</label>
+                    <textarea
+                        class="editor"
+                        id="environment-definitions"
+                        rows="12"
+                        spellcheck="false"
+                    ></textarea>
+                    <p class="dialog-hint">
+                        Blank lines, # and ; comments, and [section] headers are ignored.
+                    </p>
+                </div>
+                <footer class="dialog-actions">
+                    <span class="spacer"></span>
+                    <button type="button" data-close-dialog>CANCEL</button>
+                    <button class="primary" id="save-variables" type="button">SAVE</button>
+                </footer>
+            </form>
+        </dialog>
+    </body>
+</html>
