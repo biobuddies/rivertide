@@ -16,6 +16,7 @@
             <main>
                 <nav class="tab-bar">
                     <a class="tab" href="#environment">ENVIRONMENT</a>
+                    <a class="tab" href="#poi">POI</a>
                     <a class="tab" href="#prompt">PROMPT</a>
                 </nav>
 
@@ -31,6 +32,110 @@
                     <div class="environment-actions">
                         <button id="edit-button" type="button">EDIT ENVIRONMENT</button>
                     </div>
+                </section>
+
+                <section class="panel" id="poi">
+                    <header class="panel-header">
+                        <div>
+                            <p class="eyebrow">FIELD NOTE / NEW EDIT</p>
+                            <h2>POINT OF INTEREST</h2>
+                        </div>
+                        <span class="status" id="poi-status">DRAFT</span>
+                    </header>
+                    <div class="map-card" aria-label="OpenStreetMap location preview">
+                        <iframe
+                            title="OpenStreetMap location preview"
+                            src="https://www.openstreetmap.org/export/embed.html?bbox=-0.132%2C51.504%2C-0.112%2C51.514&amp;layer=mapnik&amp;marker=51.509%2C-0.122"
+                        ></iframe>
+                        <div class="map-location">
+                            <span class="map-marker" aria-hidden="true">+</span>
+                            <div>
+                                <strong>51.5090, -0.1220</strong>
+                                <span>OpenStreetMap · move pin later</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <form class="poi-form" id="poi-form">
+                        <fieldset>
+                            <legend>01 / EVIDENCE</legend>
+                            <label class="receipt-drop" for="receipt-file">
+                                <span class="receipt-icon" aria-hidden="true">⌁</span>
+                                <strong>DROP RECEIPT OR BROWSE</strong>
+                                <span>JPG, PNG or PDF · 10 MB max</span>
+                                <input
+                                    id="receipt-file"
+                                    name="receipt"
+                                    type="file"
+                                    accept="image/jpeg,image/png,application/pdf"
+                                />
+                            </label>
+                            <div class="receipt-file" id="receipt-summary" hidden>
+                                <span id="receipt-name"></span>
+                                <button id="remove-receipt" type="button">REMOVE</button>
+                            </div>
+                            <button class="primary full-width" id="extract-receipt" type="button">
+                                EXTRACT WITH OCR
+                            </button>
+                            <p class="form-hint" id="credential-hint">
+                                Requires RIVERTIDE_INFERENCE_API_URL and
+                                RIVERTIDE_INFERENCE_API_KEY.
+                            </p>
+                        </fieldset>
+
+                        <fieldset>
+                            <legend>02 / DETAILS</legend>
+                            <div class="field-grid">
+                                <label>
+                                    <span>NAME</span>
+                                    <input name="name" placeholder="Business name" />
+                                </label>
+                                <label>
+                                    <span>CATEGORY</span>
+                                    <select name="category">
+                                        <option value="">Select category</option>
+                                        <option value="amenity=cafe">Cafe</option>
+                                        <option value="amenity=restaurant">Restaurant</option>
+                                        <option value="shop=convenience">Convenience store</option>
+                                        <option value="shop=supermarket">Supermarket</option>
+                                    </select>
+                                </label>
+                                <label class="wide-field">
+                                    <span>ADDRESS</span>
+                                    <input name="address" placeholder="Street, city, postcode" />
+                                </label>
+                                <label>
+                                    <span>PHONE</span>
+                                    <input name="phone" type="tel" placeholder="+44 ..." />
+                                </label>
+                                <label>
+                                    <span>WEBSITE</span>
+                                    <input name="website" type="url" placeholder="https://" />
+                                </label>
+                            </div>
+                        </fieldset>
+
+                        <fieldset>
+                            <legend>03 / VERIFY</legend>
+                            <label class="check-option">
+                                <input id="cross-check" name="crossCheck" type="checkbox" checked />
+                                <span>
+                                    <strong>CROSS-CHECK BEFORE REVIEW</strong>
+                                    <small
+                                        >Compare receipt details with public sources via
+                                        inference.</small
+                                    >
+                                </span>
+                            </label>
+                            <p class="verification-result" id="verification-result" hidden></p>
+                        </fieldset>
+
+                        <button class="primary full-width" type="submit">PREPARE OSM EDIT</button>
+                        <p class="form-hint">
+                            Submission requires RIVERTIDE_OSM_ACCESS_TOKEN; nothing is published
+                            without a final review.
+                        </p>
+                    </form>
                 </section>
 
                 <section class="panel" id="prompt">
