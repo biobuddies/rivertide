@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta name="color-scheme" content="dark" />
+        <title>RIVERTIDE</title>
+        <link rel="stylesheet" href="index.css" />
+        <script src="index.js" defer></script>
+    </head>
+    <body>
+        <div class="screen">
+            <header class="titlebar">
+                <h1>RIVERTIDE<span class="cursor">_</span></h1>
+            </header>
+            <main>
+                <nav class="tab-bar">
+                    <a class="tab" href="#environment">ENVIRONMENT</a>
+                    <a class="tab" href="#prompt">PROMPT</a>
+                </nav>
+
+                <section class="panel" id="environment">
+                    <header class="panel-header">
+                        <h2 id="environment-heading">ENVIRONMENT</h2>
+                        <span class="count" id="count">0 VARIABLES</span>
+                    </header>
+                    <dl class="environment" id="environment-list"></dl>
+                    <p class="empty-state" id="empty-state" hidden>
+                        No RIVERTIDE_ variables stored.
+                    </p>
+                    <div class="environment-actions">
+                        <button id="edit-button" type="button">EDIT ENVIRONMENT</button>
+                    </div>
+                </section>
+
+                <section class="panel" id="prompt">
+                    <h2 id="prompt-heading">PROMPT</h2>
+                    <div class="prompt-actions">
+                        <button
+                            class="prompt-action"
+                            type="button"
+                            title="Dictate from scratch"
+                            aria-label="Dictate from scratch"
+                        >
+                            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+                                <circle cx="12" cy="12" r="8"></circle>
+                            </svg>
+                            <sub>0</sub>
+                        </button>
+                        <button
+                            class="prompt-action"
+                            type="button"
+                            title="Dictate fixups"
+                            aria-label="Dictate fixups"
+                        >
+                            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+                                <circle cx="12" cy="12" r="8"></circle>
+                            </svg>
+                            <sub>&Delta;</sub>
+                        </button>
+                        <button
+                            class="prompt-action"
+                            type="button"
+                            title="Interrupt"
+                            aria-label="Interrupt"
+                        >
+                            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+                                <path d="M8 5v14l11-7z"></path>
+                            </svg>
+                            <sub>!</sub>
+                        </button>
+                        <button
+                            class="prompt-action"
+                            type="button"
+                            title="Enqueue"
+                            aria-label="Enqueue"
+                        >
+                            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+                                <path d="M8 5v14l11-7z"></path>
+                            </svg>
+                            <sub>+</sub>
+                        </button>
+                    </div>
+                    <textarea
+                        class="editor prompt-editor"
+                        id="prompt-text"
+                        rows="12"
+                        spellcheck="false"
+                        placeholder="Type a prompt..."
+                        aria-label="Prompt"
+                    ></textarea>
+                </section>
+            </main>
+        </div>
+
+        <dialog id="environment-dialog" aria-labelledby="dialog-title">
+            <form id="environment-form">
+                <header class="dialog-header">
+                    <h2 id="dialog-title">ENVIRONMENT</h2>
+                    <button class="icon-button" type="button" data-close-dialog aria-label="Close">
+                        ×
+                    </button>
+                </header>
+                <div class="dialog-body">
+                    <label class="editor-label" for="environment-definitions">NAME = value</label>
+                    <textarea
+                        class="editor"
+                        id="environment-definitions"
+                        rows="12"
+                        spellcheck="false"
+                    ></textarea>
+                    <p class="dialog-hint">
+                        Blank lines, # and ; comments, and [section] headers are ignored.
+                    </p>
+                </div>
+                <footer class="dialog-actions">
+                    <span class="spacer"></span>
+                    <button type="button" data-close-dialog>CANCEL</button>
+                    <button class="primary" id="save-variables" type="button">SAVE</button>
+                </footer>
+            </form>
+        </dialog>
+    </body>
+</html>
