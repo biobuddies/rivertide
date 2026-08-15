@@ -116,6 +116,115 @@ main {
     flex: 1;
 }
 
+.tab-bar {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1.25rem;
+    border-bottom: 1px solid var(--orange-dim);
+    padding-bottom: 0.5rem;
+}
+
+.tab {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    padding: 0.6rem 1rem;
+    border: 1px solid var(--orange-dim);
+    background: transparent;
+    color: var(--green-dim);
+    letter-spacing: 0.06em;
+    text-decoration: none;
+    text-transform: uppercase;
+    cursor: pointer;
+}
+
+.tab:hover,
+.tab:focus-visible {
+    color: var(--orange);
+    background: var(--orange-faint);
+    border-color: var(--orange);
+    box-shadow: 0 0 0.75rem var(--orange-glow);
+}
+
+.tab:focus-visible {
+    outline: 2px solid var(--orange);
+    outline-offset: 2px;
+}
+
+body:has(#environment:target) .tab[href='#environment'],
+body:has(#prompt:target) .tab[href='#prompt'],
+body:not(:has(.panel:target)) .tab[href='#environment'] {
+    color: var(--orange);
+    background: var(--green-faint);
+    border-color: var(--orange);
+    box-shadow: 0 0 0.75rem var(--orange-glow);
+}
+
+.panel {
+    display: none;
+}
+
+.panel:target {
+    display: block;
+}
+
+main:not(:has(.panel:target)) .panel:first-of-type {
+    display: block;
+}
+
+.panel-header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+}
+
+.panel-header h2 {
+    margin: 0;
+}
+
+.environment-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 1rem;
+}
+
+.prompt-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+}
+
+.prompt-action {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    min-height: 44px;
+    padding: 0.5rem 0.75rem;
+    font-size: 1rem;
+    line-height: 1;
+    text-transform: none;
+}
+
+.prompt-action .icon {
+    width: 1.25rem;
+    height: 1.25rem;
+    fill: currentColor;
+}
+
+.prompt-action sub {
+    align-self: flex-end;
+    font-size: 0.6em;
+    line-height: 1;
+}
+
+.editor.prompt-editor {
+    min-height: 16rem;
+}
+
 h2 {
     margin: 0 0 0.75rem;
     font-size: 0.85rem;
@@ -150,19 +259,6 @@ h2 {
 .empty-state {
     margin: 0;
     color: var(--orange-dim);
-}
-
-.toolbar {
-    position: sticky;
-    bottom: 0;
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: space-between;
-    gap: 0.75rem;
-    padding: 0.75rem 0;
-    background: var(--background);
-    border-top: 1px solid var(--orange-dim);
 }
 
 .count {
@@ -263,15 +359,4 @@ dialog::backdrop {
 
 .spacer {
     flex: 1;
-}
-
-@media (max-width: 24rem) {
-    .toolbar {
-        flex-direction: column;
-        align-items: stretch;
-    }
-
-    .count {
-        text-align: center;
-    }
 }

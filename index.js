@@ -1,6 +1,6 @@
 const environmentPrefix = 'RIVERTIDE_'
 
-const environmentList = document.querySelector('#environment')
+const environmentList = document.querySelector('#environment-list')
 const emptyState = document.querySelector('#empty-state')
 const count = document.querySelector('#count')
 const editButton = document.querySelector('#edit-button')
