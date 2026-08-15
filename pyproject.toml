@@ -25,6 +25,7 @@ pre-commit = [
     'yamllint',
 ]
 test = [
+    'playwright',
     'pytest',
     'pytest-cov',
 ]
