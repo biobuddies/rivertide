@@ -7,6 +7,12 @@ const editButton = document.querySelector('#edit-button')
 const environmentDialog = document.querySelector('#environment-dialog')
 const environmentDefinitions = document.querySelector('#environment-definitions')
 const saveButton = document.querySelector('#save-variables')
+const promptText = document.querySelector('#prompt-text')
+const enqueueButton = document.querySelector('#enqueue-button')
+const interruptButton = document.querySelector('#interrupt-button')
+const outputList = document.querySelector('#output-list')
+const outputEmpty = document.querySelector('#output-empty')
+const queueCount = document.querySelector('#queue-count')
 
 const environmentKeys = () =>
     Object.keys(localStorage)
@@ -79,6 +85,18 @@ const providers = [
                     Authorization: `Bearer ${token}`,
                     'X-GitHub-Api-Version': '2022-11-28',
                 },
+            })
+            return response.ok
+        },
+    },
+    {
+        id: 'zai',
+        name: 'Z.AI',
+        credentialKeys: ['ZAI_API_KEY', 'ZAI_TOKEN'],
+        icon: 'M5 4H19V7.5L5 16.5V20H19V16.5L5 7.5Z',
+        check: async (token) => {
+            const response = await fetch('https://api.z.ai/api/paas/v4/models', {
+                headers: {Authorization: `Bearer ${token}`},
             })
             return response.ok
         },
@@ -197,5 +215,117 @@ saveButton.addEventListener('click', saveEnvironment)
 document.querySelectorAll('[data-close-dialog]').forEach((button) => {
     button.addEventListener('click', () => environmentDialog.close())
 })
+
+const zaiProvider = providers.find((provider) => provider.id === 'zai')
+
+const credential = (provider) => {
+    const environment = readEnvironment()
+    return provider.credentialKeys.map((key) => environment[key]).find((value) => value)
+}
+
+const zaiModel = 'glm-5.2'
+const zaiEndpoint = 'https://api.z.ai/api/paas/v4/chat/completions'
+
+const queue = []
+let activeController = null
+
+const renderQueue = () => {
+    const total = queue.length + (activeController ? 1 : 0)
+    queueCount.textContent = `${total} QUEUED`
+    outputEmpty.hidden = outputList.children.length > 0
+}
+
+const createEntry = (prompt) => {
+    const entry = document.createElement('li')
+    entry.className = 'output-entry is-streaming'
+    const label = document.createElement('p')
+    label.className = 'output-entry-prompt'
+    label.textContent = prompt
+    const text = document.createElement('p')
+    text.className = 'output-entry-text'
+    entry.append(label, text)
+    outputList.append(entry)
+    outputEmpty.hidden = true
+    return {entry, text}
+}
+
+const streamCompletion = async (prompt, text, signal) => {
+    const apiKey = credential(zaiProvider)
+    if (!apiKey) throw new Error('No Z.AI API key. Set ZAI_API_KEY in ENVIRONMENT.')
+    const response = await fetch(zaiEndpoint, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${apiKey}`,
+        },
+        body: JSON.stringify({
+            model: zaiModel,
+            messages: [{role: 'user', content: prompt}],
+            stream: true,
+        }),
+        signal,
+    })
+    if (!response.ok) throw new Error(`Z.AI ${response.status}: ${await response.text()}`)
+    const reader = response.body.getReader()
+    const decoder = new TextDecoder()
+    let buffer = ''
+    while (true) {
+        const {done, value} = await reader.read()
+        if (done) break
+        buffer += decoder.decode(value, {stream: true})
+        const lines = buffer.split('\n')
+        buffer = lines.pop()
+        for (const line of lines) {
+            const trimmed = line.trim()
+            if (!trimmed.startsWith('data:')) continue
+            const data = trimmed.slice(5).trim()
+            if (data === '[DONE]') return
+            const delta = JSON.parse(data).choices?.[0]?.delta?.content
+            if (delta) text.append(delta)
+        }
+    }
+}
+
+const processQueue = async () => {
+    if (activeController || queue.length === 0) return
+    const prompt = queue.shift()
+    const {entry, text} = createEntry(prompt)
+    renderQueue()
+    activeController = new AbortController()
+    try {
+        await streamCompletion(prompt, text, activeController.signal)
+    } catch (error) {
+        if (error.name === 'AbortError') {
+            entry.classList.add('is-interrupted')
+        } else {
+            entry.classList.add('is-error')
+            text.textContent = error.message
+        }
+    } finally {
+        entry.classList.remove('is-streaming')
+        activeController = null
+        renderQueue()
+        processQueue()
+    }
+}
+
+const enqueue = () => {
+    const prompt = promptText.value.trim()
+    if (!prompt) return
+    queue.push(prompt)
+    promptText.value = ''
+    renderQueue()
+    processQueue()
+}
+
+const interrupt = () => {
+    if (activeController) activeController.abort()
+    queue.length = 0
+    renderQueue()
+}
+
+enqueueButton.addEventListener('click', enqueue)
+interruptButton.addEventListener('click', interrupt)
+renderQueue()
 
 renderEnvironment()
