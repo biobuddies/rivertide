@@ -17,6 +17,7 @@
                 <nav class="tab-bar">
                     <a class="tab" href="#environment">ENVIRONMENT</a>
                     <a class="tab" href="#prompt">PROMPT</a>
+                    <a class="tab" href="#output">OUTPUT</a>
                 </nav>
 
                 <section class="panel" id="environment">
@@ -60,6 +61,7 @@
                         </button>
                         <button
                             class="prompt-action"
+                            id="interrupt-button"
                             type="button"
                             title="Interrupt"
                             aria-label="Interrupt"
@@ -71,6 +73,7 @@
                         </button>
                         <button
                             class="prompt-action"
+                            id="enqueue-button"
                             type="button"
                             title="Enqueue"
                             aria-label="Enqueue"
@@ -89,6 +92,15 @@
                         placeholder="Type a prompt..."
                         aria-label="Prompt"
                     ></textarea>
+                </section>
+
+                <section class="panel" id="output">
+                    <header class="panel-header">
+                        <h2 id="output-heading">OUTPUT</h2>
+                        <span class="count" id="queue-count">0 QUEUED</span>
+                    </header>
+                    <p class="empty-state" id="output-empty">No output yet.</p>
+                    <ol class="output-list" id="output-list"></ol>
                 </section>
             </main>
         </div>
