@@ -7,6 +7,13 @@ const editButton = document.querySelector('#edit-button')
 const environmentDialog = document.querySelector('#environment-dialog')
 const environmentDefinitions = document.querySelector('#environment-definitions')
 const saveButton = document.querySelector('#save-variables')
+const poiForm = document.querySelector('#poi-form')
+const receiptFile = document.querySelector('#receipt-file')
+const receiptSummary = document.querySelector('#receipt-summary')
+const receiptName = document.querySelector('#receipt-name')
+const extractReceipt = document.querySelector('#extract-receipt')
+const poiStatus = document.querySelector('#poi-status')
+const verificationResult = document.querySelector('#verification-result')
 
 const environmentKeys = () =>
     Object.keys(localStorage)
@@ -192,10 +199,79 @@ const saveEnvironment = () => {
     environmentDialog.close()
 }
 
+const setReceipt = () => {
+    const file = receiptFile.files[0]
+    receiptSummary.hidden = !file
+    receiptName.textContent = file ? `${file.name} · ${(file.size / 1_000_000).toFixed(2)} MB` : ''
+    extractReceipt.disabled = !file
+}
+
+const extractReceiptDetails = async () => {
+    const variables = readEnvironment()
+    if (!variables.INFERENCE_API_URL || !variables.INFERENCE_API_KEY) {
+        location.hash = 'environment'
+        openDialog()
+        environmentDefinitions.setCustomValidity('Add INFERENCE_API_URL and INFERENCE_API_KEY')
+        environmentDefinitions.reportValidity()
+        return
+    }
+    poiStatus.textContent = 'EXTRACTING'
+    extractReceipt.disabled = true
+    const body = new FormData()
+    body.append('receipt', receiptFile.files[0])
+    body.append('cross_check', document.querySelector('#cross-check').checked)
+    try {
+        const response = await fetch(variables.INFERENCE_API_URL, {
+            method: 'POST',
+            headers: {Authorization: `Bearer ${variables.INFERENCE_API_KEY}`},
+            body,
+        })
+        if (!response.ok) throw new Error(`Inference API returned ${response.status}`)
+        const details = await response.json()
+        Object.entries(details.poi || details).forEach(([name, value]) => {
+            const field = poiForm.elements.namedItem(name)
+            if (field && typeof value === 'string') field.value = value
+        })
+        verificationResult.hidden = !details.verification
+        verificationResult.textContent = details.verification || ''
+        poiStatus.textContent = 'REVIEW OCR'
+    } catch (error) {
+        poiStatus.textContent = 'OCR FAILED'
+        verificationResult.hidden = false
+        verificationResult.textContent = error.message
+    } finally {
+        extractReceipt.disabled = false
+    }
+}
+
+const prepareOsmEdit = (event) => {
+    event.preventDefault()
+    const variables = readEnvironment()
+    if (!variables.OSM_ACCESS_TOKEN) {
+        location.hash = 'environment'
+        openDialog()
+        environmentDefinitions.setCustomValidity('Add OSM_ACCESS_TOKEN before preparing an edit')
+        environmentDefinitions.reportValidity()
+        return
+    }
+    poiStatus.textContent = 'READY TO REVIEW'
+    verificationResult.hidden = false
+    verificationResult.textContent =
+        'Draft prepared locally. Review the tags before publishing to OSM.'
+}
+
 editButton.addEventListener('click', openDialog)
 saveButton.addEventListener('click', saveEnvironment)
 document.querySelectorAll('[data-close-dialog]').forEach((button) => {
     button.addEventListener('click', () => environmentDialog.close())
 })
+receiptFile.addEventListener('change', setReceipt)
+document.querySelector('#remove-receipt').addEventListener('click', () => {
+    receiptFile.value = ''
+    setReceipt()
+})
+extractReceipt.addEventListener('click', extractReceiptDetails)
+poiForm.addEventListener('submit', prepareOsmEdit)
 
 renderEnvironment()
+setReceipt()
