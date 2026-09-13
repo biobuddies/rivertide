@@ -5,6 +5,8 @@ version = '0'
 
 dependencies = [
     
+    'helicopyter',
+    
 ]
 
 [project.optional-dependencies]

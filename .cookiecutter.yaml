@@ -1,2 +1,4 @@
 default_context:
-    languages: Node,Python
+    languages: Node,Python,Terraform
+    python_dependencies:
+        - helicopyter
