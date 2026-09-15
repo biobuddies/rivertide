@@ -14,6 +14,7 @@ zone_id = environ['CLOUDFLARE_ZONE_ID']
 
 terraform.backend('s3')(
     bucket='terraform',
+    endpoints={'s3': f'https://{account_id}.r2.cloudflarestorage.com'},
     key='rivertide.tfstate',
     region='auto',
     workspace_key_prefix='rivertide',

@@ -4,7 +4,6 @@ defaults:
         shell: bash --noprofile --norc -o errexit -o nounset -o pipefail -o xtrace {0}
 env:
     AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-    AWS_ENDPOINT_URL_S3: ${{ secrets.AWS_ENDPOINT_URL_S3 }}
     AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
     CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
     CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
@@ -71,6 +70,13 @@ jobs:
                 && 'prod'
                 || github.head_ref
                 || github.ref_name }}
+            # Synchronize with .config/mise.toml:50 tasks.fqdn.
+            url: >-
+                https://${{ (github.event_name == 'release'
+                || github.ref_name == 'main')
+                && 'biobuddi.es'
+                || format('{0}.biobuddi.es',
+                github.head_ref || github.ref_name) }}
         steps:
             - uses: actions/checkout@v6
             - uses: jdx/mise-action@v3
