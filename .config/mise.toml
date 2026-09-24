@@ -21,12 +21,17 @@ set -o errexit -o nounset
 [ -d .git ] || git init --initial-branch=main
 npm install --no-audit --no-fund &
 npm_pid=$!
+uv_status=0
 # dup :359 tasks.uv-pip-compile
+# Styleforce wheels require manylinux 2.28; uv's generic linux target assumes manylinux 2.17.
 uv pip compile --all-extras --output-file requirements.txt --quiet \
-    --python-platform linux --python-version 3.12 pyproject.toml
-uv venv --allow-existing --quiet
-uv pip sync requirements.txt --allow-empty-requirements --quiet
+    --python-platform x86_64-manylinux_2_28 \
+    --python-version 3.12 pyproject.toml \
+    && uv venv --allow-existing --quiet \
+    && uv pip sync requirements.txt --allow-empty-requirements --quiet \
+    || uv_status=$?
 wait "$npm_pid"
+[ "$uv_status" -eq 0 ] || exit "$uv_status"
 mise generate pre-commit > .git/hooks/pre-commit
 chmod +x .git/hooks/pre-commit
 """
@@ -91,10 +96,9 @@ set -- $(
 run = '''
 #!/usr/bin/env bash
 set -o errexit -o nounset -o pipefail
-# 128 if no commits yet; 129 unsupported tag options
 tag=$(git tag --points-at HEAD --sort=-refname 2>/dev/null | sed -n '1p') || {
     status=$?
-    [[ $status == 128 || $status == 129 ]]
+    [[ $status == 128 || $status == 129 ]]  # no commits yet or unsupported tag options
 }
 if [[ $tag ]]; then echo "$tag"
 elif [[ ${GITHUB_HEAD_REF-} ]]; then echo "$GITHUB_HEAD_REF"
@@ -155,7 +159,7 @@ cookiecutter --config-file .cookiecutter.yaml --no-input --overwrite-if-exists $
 run = 'mise run-on-sources django-upgrade \*.py "$@"'
 
 [tasks.deploy]
-run = ''
+run = ':'
 
 [tasks.djlint-django]
 run = 'mise run-on-sources djlint \*.dj.html --quiet --reformat --profile=django "$@"'
@@ -240,11 +244,11 @@ run = 'mise run-on-sources pyrefly "*.py{,i}" check "$@"'
 run = '''
 #!/usr/bin/env bash
 set -o errexit -o nounset -o pipefail
-prefix=$(date -u '+v%Y.%U.')
+prefix=$(date -u '+v%Y.%-U.')
 git fetch --tags
 latest=$(git tag --list "$prefix*" --sort=-version:refname | head -1)
 count=${latest#"$prefix"}
-gh release create "$prefix$(printf '%02d' "$((10#${count:-0} + 1))")" --generate-notes
+gh release create "$prefix$((${count:-0} + 1))" --generate-notes
 git fetch --tags
 '''
 
@@ -281,6 +285,9 @@ mise run-on-sources shfmt "*.{bash,sh}" \
     --binary-next-line --case-indent --simplify --write \
     --indent 4 --language-dialect bash "$@"
 '''
+
+[tasks.styleforce]
+run = 'AUTOFORMAT_EXCLUDES=${AUTOFORMAT_EXCLUDES-} mise run-on-sources styleforce "*.py{,i}" "$@"'
 
 [tasks.tabularize]
 run = """
@@ -365,13 +372,15 @@ run = 'mise run-on-sources typos "*" --write-changes --config .biobuddies/typos.
 [tasks.uv-pip-check]
 run = 'uv pip check "$@"'
 
-# dup :24 hooks.postinstall
+# dup :25 hooks.postinstall
 [tasks.uv-pip-compile]
 run = '''
 #!/usr/bin/env bash
 set -o errexit -o nounset -o pipefail
+# Styleforce wheels require manylinux 2.28; uv's generic linux target assumes manylinux 2.17.
 uv pip compile --all-extras --output-file requirements.txt --quiet \
-    --python-platform linux --python-version 3.12 pyproject.toml "$@"
+    --python-platform x86_64-manylinux_2_28 \
+    --python-version 3.12 pyproject.toml "$@"
 [[ $(mise envi) != local ]] || git add requirements.txt
 '''
 
