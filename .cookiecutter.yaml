@@ -9,7 +9,7 @@ default_context:
         CLOUDFLARE_ZONE_ID: ${{ vars.CLOUDFLARE_ZONE_ID }}
         FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
         GITHUB_TOKEN: ${{ github.token }}
-        TF_CLI_ARGS_apply: -auto-approve -input=false
+        TF_CLI_ARGS_apply: -auto-approve
     languages: Node,Python,Terraform
     python_dependencies:
         - helicopyter

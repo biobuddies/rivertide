@@ -2,22 +2,6 @@
 
 [env]
 AWS_ENDPOINT_URL_S3 = "https://{{ get_env(name='CLOUDFLARE_ACCOUNT_ID', default='UNSET') }}.r2.cloudflarestorage.com"
-INSH_TF = 'tofu'
 
 [tools]
 opentofu = '1.10.6'
-
-[tasks.build]
-run = 'python -m helicopyter --format_with=${INSH_TF:?} rivertide'
-
-[tasks.deploy]
-run = '''
-#!/usr/bin/env bash
-set -o errexit -o nounset -o pipefail
-envi=${1:?Usage: mise deploy ENVI}
-shift
-mise tinit rivertide
-"${INSH_TF:?}" -chdir=deploys/rivertide/terraform workspace select -or-create "$envi"
-TF_VAR_giha=$(mise giha) TF_WORKSPACE="$envi" \
-    "${INSH_TF:?}" -chdir=deploys/rivertide/terraform apply "$@"
-'''
