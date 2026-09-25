@@ -30,22 +30,24 @@ terraform.required_providers(cloudflare={'source': 'cloudflare/cloudflare', 'ver
 provider.cloudflare()
 
 # Foundational networking for biobuddi.es
-# Main owns the proxied records jam() requires, adopting any that already exist
+# Main, and serene-hawking until main first deploys, owns the proxied records jam() requires,
+# adopting any that already exist
+owns = 'contains(["main", "serene-hawking"], terraform.workspace)'
 names = '{"rt" = "rt.biobuddi.es", "*" = "*.biobuddi.es"}'
 records = '[for record in data.cloudflare_dns_records.existing.result : record if record.proxied]'
 data.cloudflare_dns_records.existing(name={'endswith': 'biobuddi.es'}, zone_id=zone_id)
 Block('import')(
     for_each=Block(
-        'terraform.workspace == "main" ? {for key, name in %s : key => one('
+        '%s ? {for key, name in %s : key => one('
         '[for record in %s : record.id if record.name == name]) if anytrue('
-        '[for record in %s : record.name == name])} : {}' % (names, records, records)
+        '[for record in %s : record.name == name])} : {}' % (owns, names, records, records)
     ),
     id=Block('"%s/${each.value}"' % zone_id),
     to=Block('cloudflare_dns_record.this[each.key]'),
 )
 resource.cloudflare_dns_record.this(
     content='100::',
-    for_each=Block('terraform.workspace == "main" ? %s : {}' % names),
+    for_each=Block('%s ? %s : {}' % (owns, names)),
     name=Block('each.value'),
     proxied=True,
     ttl=1,
