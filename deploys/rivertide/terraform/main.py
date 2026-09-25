@@ -6,28 +6,14 @@ rt-${terraform.workspace}.biobuddi.es. The R2 backend reads AWS_ENDPOINT_URL_S3.
 
 from os import environ
 
-from helicopyter import Block, data, provider, registry, resource, terraform
+from helicopyter import Block, data, registry, resource
 from helicopyter.cloudflare import jam
+from stacks.base import provide
 
 account_id = environ['CLOUDFLARE_ACCOUNT_ID']
 zone_id = environ['CLOUDFLARE_ZONE_ID']
 
-terraform.backend('s3')(
-    bucket='terraform',
-    endpoints={'s3': f'https://{account_id}.r2.cloudflarestorage.com'},
-    key='rivertide.tfstate',
-    region='auto',
-    workspace_key_prefix='rivertide',
-    skip_credentials_validation='true',
-    skip_metadata_api_check='true',
-    skip_region_validation='true',
-    skip_requesting_account_id='true',
-    skip_s3_checksum='true',
-    use_path_style='true',
-)
-terraform.required_providers(cloudflare={'source': 'cloudflare/cloudflare', 'version': '5.25.0'})
-
-provider.cloudflare()
+provide('cloudflare/cloudflare', '5.25.0')
 
 # Foundational networking for biobuddi.es
 # Main, and serene-hawking until main first deploys, owns the proxied records jam() requires,

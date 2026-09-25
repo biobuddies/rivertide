@@ -1,6 +1,7 @@
 # Override .config/mise.toml, which is regenerated from measles.
 
 [env]
+AWS_ENDPOINT_URL_S3 = "https://{{ get_env(name='CLOUDFLARE_ACCOUNT_ID', default='UNSET') }}.r2.cloudflarestorage.com"
 INSH_TF = 'tofu'
 
 [tools]
