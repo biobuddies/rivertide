@@ -17,6 +17,6 @@ envi=${1:?Usage: mise deploy ENVI}
 shift
 mise tinit rivertide
 "${INSH_TF:?}" -chdir=deploys/rivertide/terraform workspace select -or-create "$envi"
-TF_VAR_giha=$(mise giha) TF_VAR_tabr=$(mise tabr) TF_WORKSPACE="$envi" \
+TF_VAR_giha=$(mise giha) TF_WORKSPACE="$envi" \
     "${INSH_TF:?}" -chdir=deploys/rivertide/terraform apply "$@"
 '''
