@@ -1,9 +1,13 @@
 [project]
+description = 'Mobile-friendly web interface for programming'
 name = 'rivertide'
+readme = 'README.md'
 requires-python = '>=3.12'
 version = '0'
 
 dependencies = [
+    
+    'helicopyter',
     
 ]
 
@@ -13,13 +17,14 @@ pre-commit = [
     'basedpyright',
     'cookiecutter',
     'django-upgrade',
-    'djlint',
+    'djlint>=1.45.0',
     'hadolint-py @ git+https://github.com/AleksaC/hadolint-py.git',
     'pre-commit-hooks',
     'pyrefly',
     'ruff',
     'shellcheck-py',
     'shfmt-py',
+    'styleforce',
     'typos',
     'validate-pyproject[all]',
     'yamllint',
@@ -29,11 +34,24 @@ test = [
     'pytest-cov',
 ]
 
+[project.urls]
+source = 'https://github.com/biobuddies/rivertide'
+
 [tool.pytest.ini_options]
 norecursedirs = ['.venv', 'node_modules', '{{cookiecutter.dot}}']
 
 [tool.basedpyright]
 extends = '.biobuddies/basedpyright.toml'
+
+[tool.djlint]
+close_void_tags = true
+format_attribute_template_tags = true
+indent = 4
+max_attribute_length = 100
+max_blank_lines = 1
+max_line_length = 100
+no_entity_formatting = true
+quote_style = 'single'
 
 [tool.ruff]
 extend = '.biobuddies/ruff.toml'

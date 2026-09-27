@@ -1,2 +1,15 @@
 default_context:
-    languages: Node,Python
+    description: Mobile-friendly web interface for programming
+    domain_name: biobuddi.es
+    github_actions_env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+        CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        CLOUDFLARE_ZONE_ID: ${{ vars.CLOUDFLARE_ZONE_ID }}
+        FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+        GITHUB_TOKEN: ${{ github.token }}
+        TF_CLI_ARGS_apply: -auto-approve
+    languages: Node,Python,Terraform
+    python_dependencies:
+        - helicopyter
