@@ -36,7 +36,7 @@ fastjsonschema==2.22.1
     # via validate-pyproject
 hadolint-py @ git+https://github.com/AleksaC/hadolint-py.git@6e7504451511eaeb62a3e7f14d63b0296cbf86eb
     # via rivertide (pyproject.toml)
-helicopyter==2026.38.1
+helicopyter==2026.40.2
     # via rivertide (pyproject.toml)
 idna==3.18
     # via requests
