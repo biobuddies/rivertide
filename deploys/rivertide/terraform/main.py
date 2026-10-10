@@ -13,7 +13,7 @@ from stacks.base import provide
 account_id = environ['CLOUDFLARE_ACCOUNT_ID']
 zone_id = environ['CLOUDFLARE_ZONE_ID']
 
-provide('cloudflare/cloudflare', '5.25.0')
+provide('cloudflare/cloudflare', '5.27.0-startup.1')
 
 # Foundational networking for biobuddi.es
 # Main, and serene-hawking until main first deploys, owns the proxied records jam() requires,
