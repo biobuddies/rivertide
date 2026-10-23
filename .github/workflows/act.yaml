@@ -33,6 +33,7 @@ jobs:
               with:
                   fetch-depth: 0
                   ref: ${{ github.head_ref || github.ref }}
+                  submodules: true
             - uses: jdx/mise-action@v4
               with:
                   experimental: true
@@ -46,6 +47,7 @@ jobs:
               with:
                   fetch-depth: 0
                   ref: ${{ github.head_ref || github.ref }}
+                  submodules: true
             - uses: jdx/mise-action@v4
               with:
                   experimental: true
@@ -59,6 +61,7 @@ jobs:
               with:
                   fetch-depth: 0
                   ref: ${{ github.head_ref || github.ref }}
+                  submodules: true
             - uses: jdx/mise-action@v4
               with:
                   experimental: true
@@ -81,6 +84,8 @@ jobs:
                 github.head_ref || github.ref_name) }}
         steps:
             - uses: actions/checkout@v7
+              with:
+                  submodules: true
             - uses: jdx/mise-action@v4
               with:
                   experimental: true
