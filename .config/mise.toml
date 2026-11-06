@@ -8,6 +8,8 @@ lockfile = true
 uv_venv_auto = 'create|source'
 
 [env]
+AUTOFORMAT_EXCLUDES = '''{{ exec(command="cd " ~ config_root ~ " && sed -nE '/^#|^$/!p' "
+    ~ ".biobuddies/autoformat-excludes .config/autoformat-excludes 2>/dev/null || true") }}'''
 INSH_TF = 'tofu'
 TENV_AUTO_INSTALL = 'true'
 # Claude Code on the web blocks api.github.com, such as latest-release queries, but not downloads
@@ -41,7 +43,7 @@ chmod +x .git/hooks/pre-commit
 mkdir -p ~/.local/share/gh/extensions
 ln -sfn "$(mise where github:github/gh-stack)" ~/.local/share/gh/extensions/gh-stack
 # Unlike a tool postinstall, which a restored mise cache skips
-mirror=~/.terraform.d/plugins/registry.opentofu.org/cloudflare/cloudflare/5.27.0-startup.1
+mirror=~/.terraform.d/plugins/registry.opentofu.org/cloudflare/cloudflare/5.27.0-startup.2
 if directory=$(mise where github:biobuddies/helicopyter 2>/dev/null); then
     mkdir -p "$mirror"
     ln -sfn "$directory" "$mirror/linux_amd64"
@@ -218,7 +220,8 @@ run = 'mise tapply "$@"'
 [tasks.djlint-django]
 # Resolve long attribute and other potential formatting differences in favor of prettier
 run = '''
-mise run-on-sources djlint \*.dj.html --quiet --reformat --profile=django "$@" || test $? -eq 1
+mise run-on-sources djlint \*.dj.html --quiet --reformat --profile=django "$@" 2>/dev/null \
+    || test $? -eq 1
 mise run-on-sources prettier \*.dj.html --write "$@"
 mise run-on-sources djlint \*.dj.html --lint --quiet --profile=django "$@"
 '''
@@ -226,7 +229,8 @@ mise run-on-sources djlint \*.dj.html --lint --quiet --profile=django "$@"
 [tasks.djlint-jinja-html]
 # Resolve long attribute and other potential formatting differences in favor of prettier
 run = '''
-mise run-on-sources djlint \*.j2.html --quiet --reformat --profile=jinja "$@" || test $? -eq 1
+mise run-on-sources djlint \*.j2.html --quiet --reformat --profile=jinja "$@" 2>/dev/null \
+    || test $? -eq 1
 mise run-on-sources prettier \*.j2.html --write "$@"
 mise run-on-sources djlint \*.j2.html --lint --quiet --profile=jinja "$@"
 '''
@@ -239,7 +243,7 @@ mise run-on-sources djlint \*.j2.html --lint --quiet --profile=jinja "$@"
 run = '''
 mise run-on-sources djlint \*.j2.yaml \
     --no-function-formatting --preserve-blank-lines --preserve-leading-space --quiet --reformat \
-    --profile=jinja "$@" || test $? -eq 1
+    --profile=jinja "$@" 2>/dev/null || test $? -eq 1
 '''
 
 [tasks.end-of-file-fixer]
@@ -253,7 +257,8 @@ run = '''
 #!/usr/bin/env bash
 set -o errexit -o nounset -o pipefail
 field=${1:?missing title or body} number=${2:?missing number} lease=${3:?missing lease}
-path=repos/$(git remote get-url origin | sed -E 's,.*[:/]([^/]+/[^/]+)$,\1,; s,\.git$,,')/pulls/$number
+repository=$(git remote get-url origin | sed -E 's,.*[:/]([^/]+/[^/]+)$,\1,; s,\.git$,,')
+path=repos/$repository/pulls/$number
 current=$(gh api "$path" --jq ".$field // \"\"")
 hash=$(printf '%s\n' "$current" | sha256sum | cut -c1-16)
 if [[ $hash != "$lease" ]]; then
@@ -281,7 +286,8 @@ run = '''
 #!/usr/bin/env bash
 set -o errexit -o nounset -o pipefail
 field=${1:?missing title or body} number=${2:?missing number}
-path=repos/$(git remote get-url origin | sed -E 's,.*[:/]([^/]+/[^/]+)$,\1,; s,\.git$,,')/pulls/$number
+repository=$(git remote get-url origin | sed -E 's,.*[:/]([^/]+/[^/]+)$,\1,; s,\.git$,,')
+path=repos/$repository/pulls/$number
 current=$(gh api "$path" --jq ".$field // \"\"")
 printf '%s\n' "$current"
 printf 'lease %s\n' "$(printf '%s\n' "$current" | sha256sum | cut -c1-16)" >&2
@@ -399,8 +405,8 @@ eval "$commands"
 # Skip Markdown to conserve vertical space.
 # The Jinja parser's HTML layout mangles Jinja JSON; djlint handles Jinja YAML.
 run = '''
-mise run-on-sources prettier "*.{css,html,js,json,jsx,toml,ts,tsx,yaml} :!*.dj.html :!*.j2.html :!*.j2.json :!*.j2.yaml" \
-    --write "$@"
+mise run-on-sources prettier "*.{css,html,js,json,jsx,toml,ts,tsx,yaml} \
+    :!*.dj.html :!*.j2.html :!*.j2.json :!*.j2.yaml" --write "$@"
 '''
 
 [tasks.pyrefly]
@@ -492,6 +498,9 @@ run = 'mise run-on-sources trailing-whitespace-fixer . "$@"'
 [tasks.tvalid]
 run = 'mise tact validate "$@"'
 
+[tasks.mise-lock]
+run = 'mise lock "$@"'
+
 [tasks.npm-package-lock]
 run = 'npm install --package-lock-only "$@"'
 
@@ -514,13 +523,16 @@ uv pip compile --all-extras --output-file requirements.txt --quiet \
 '''
 
 [tasks.update-lock-files]
-depends = ['npm-package-lock', 'uv-pip-compile']
+depends = ['mise-lock', 'npm-package-lock', 'uv-pip-compile']
 
 [tasks.validate-pyproject]
 run = 'validate-pyproject pyproject.toml "$@"'
 
 [tasks.wait-actions]
-run = 'mise x -- gh run list --branch $(git branch --show-current) --limit 1 --json databaseId --jq ".[0].databaseId" | xargs -I {} mise x -- gh run watch {}'
+run = '''
+mise x -- gh run list --branch $(git branch --show-current) --limit 1 --json databaseId \
+    --jq '.[0].databaseId' | xargs -I {} mise x -- gh run watch {}
+'''
 
 [tasks.yamllint]
 # Jinja tags are invalid YAML; djlint handles Jinja YAML.
@@ -560,8 +572,6 @@ depends = [
 run = '''
 #!/usr/bin/env bash
 set -o errexit -o nounset -o pipefail
-export AUTOFORMAT_EXCLUDES=$(sed -nE '/^#|^$/!p' .biobuddies/autoformat-excludes \
-    .config/autoformat-excludes 2>/dev/null)
 mise parallel-pre-commit
 # dup :435 tasks.pre-commit-all
 [[ $(mise envi) == local ]] || { git diff --color=always --exit-code; exit $?; }
@@ -584,7 +594,7 @@ set -o errexit -o nounset -o pipefail
 mise cookiecutter "$@"  # needs Internet
 mise pre-commit "$@"
 mise lychee  # Requires Internet
-mise uv-pip-compile  # needs Internet
+mise update-lock-files  # needs Internet
 # dup :414 tasks.pre-commit
 [[ $(mise envi) == local ]] || { git diff --color=always --exit-code; exit $?; }
 git diff --cached --quiet || echo Auto-staged modifications
@@ -602,5 +612,4 @@ uv = '0.12.5'
 [tools.'github:biobuddies/helicopyter']
 asset_pattern = '*linux_amd64.zip'
 os = ['linux']
-version = '5.27.0-startup.1'
-version_prefix = 'terraform-provider-cloudflare-v'
+version = '2026.41.2'
